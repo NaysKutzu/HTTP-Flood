@@ -1,5 +1,8 @@
 # HTTP-Flood
 Just simple httpflood
+TODO:
+Remove shity-code 
+Add proxy
 
 ## Install
 ```sh
