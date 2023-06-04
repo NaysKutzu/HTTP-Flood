@@ -5,27 +5,40 @@ import(
   "os"
   "math/rand"
   "bufio"
+  "fmt"
   "github.com/valyala/fasthttp"
-  "strings"
 )
 
 type spoof struct{
-  ip string
   count int
 }
 
 type header struct{
-  advanced string
-  a_headers []string
+  advanced bool
+  a_headers map[string]string
 }
 
-type bilder interface{
-  spoofS(req *fasthttp.Request)
-  headers(req *fasthttp.Request)
+func NewSpoof(count int) *spoof{
+  return &spoof{
+    count:count,
+  }
 }
+func NewHeader(advanced bool, a_headers map[string]string) *header{
+  return &header{
+    advanced:advanced,
+    a_headers:a_headers,
+  }
+}
+var(
+  Source = rand.NewSource(time.Now().Unix())
+  Random = rand.New(Source)
+)
 
+func randomIp() string{
+  return fmt.Sprintf("%d.%d.%d.%d", Random.Intn(255), Random.Intn(255), Random.Intn(255), Random.Intn(255))
+}
 func (s spoof) spoofS(req *fasthttp.Request) {
-  rangee := []string{}
+  rangeip := []string{}
   file, err := os.Open("src/rate_headers.txt")
   if err != nil{
     panic(err)
@@ -33,18 +46,15 @@ func (s spoof) spoofS(req *fasthttp.Request) {
   }
   scan := bufio.NewScanner(file)
   for scan.Scan(){
-    //fmt.Println(scan.Text() + ":" + s.ip)
-    rangee = append(rangee, scan.Text())
+    rangeip = append(rangeip, scan.Text())
   }
-  f := rand.NewSource(time.Now().Unix())
-  r := rand.New(f)
   for i:=0; i<s.count; i++{
-    //fmt.Println(rangee[r.Intn(len(rangee))] + ":" + s.ip)
-    req.Header.Add(string(rangee[r.Intn(len(rangee))]), string(s.ip))
+    ip := randomIp()
+    req.Header.Add(string(rangeip[Random.Intn(len(rangeip))]), ip)
   }
 }
 
-func (b header) headers(req *fasthttp.Request){
+func (h header) headers(req *fasthttp.Request){
   uas := []string{}
   file, err := os.Open("src/user-agents.txt")
   if err != nil {
@@ -55,13 +65,10 @@ func (b header) headers(req *fasthttp.Request){
   for scan.Scan(){
     uas = append(uas, scan.Text())
   }
-  f := rand.NewSource(time.Now().Unix())
-  r := rand.New(f)
-  req.Header.Add("User-Agent", uas[r.Intn(len(uas))])
-  if b.advanced == "true"{
-    for i:=0; i < len(b.a_headers); i++{
-      hed := strings.Split(b.a_headers[i], ":")
-      req.Header.Add(hed[0], hed[1])
+  req.Header.Add("User-Agent", uas[Random.Intn(len(uas))])
+  if h.advanced == true{
+    for head, value := range h.a_headers{
+      req.Header.Add(head, value)
     }
   }
 }
