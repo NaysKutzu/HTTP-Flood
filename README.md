@@ -1,9 +1,9 @@
-# HTTP-Flood
+# HTTP-Flood 
 Just simple HttpFlood
 
 TODO:
 Remove shity-code 
-
+Fix the problems with proxy
 
 ## Install
 ```sh
